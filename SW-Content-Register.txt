@@ -1,0 +1,21 @@
+Release Name: MCUXpresso Software Development Kit (SDK) BLE Host middleware
+Release Version: 2.6.7
+Package License: LA_OPT_NXP_Software_License.htm - Additional Distribution License, Section 2.3 applies
+
+BLE                        version: 1.7.4.1                                    
+                           Location: /           
+                           Description: Bluetooth Low Energy Software        
+                           License: Open Source - BSD-3-Clause               
+                           Author: NXP                                       
+                           name: Bluetooth Low Energy Application Source     
+                           Format: Source code and header Files              
+
+BLE_HostLib                version: 1.7.4.1                                    
+                           Location: host/lib  
+                           Description: Bluetooth Low Energy Stack (HCI,     
+                           L2CAP, ATT, GATT, GAP and SM)                     
+                           License: Proprietary, See EULA                    
+                           LA_OPT_NXP_Software_License.htm                   
+                           Author: NXP                                       
+                           name: Bluetooth Low Energy Host Firmware          
+                           Format: Binary libraries
