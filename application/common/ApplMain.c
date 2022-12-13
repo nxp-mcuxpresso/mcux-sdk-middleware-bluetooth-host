@@ -25,6 +25,8 @@
 #include "Messaging.h"
 #include "Flash_Adapter.h"
 #include "SecLib.h"
+#include "SecLib_ecp256.h"
+
 #include "Panic.h"
 #include "board.h"
 
@@ -334,10 +336,12 @@ MULTICORE_STATIC void App_L2caLeControlCallback
     l2capControlMessage_t* pMessage
 );
 
+#if !(defined EC_P256_DSPEXT && (EC_P256_DSPEXT == 1))
 MULTICORE_STATIC void App_SecLibMultCallback
 (
     computeDhKeyParam_t *pData
 );
+#endif
 
 #if !defined (SOTA_ENABLED) && !defined (DUAL_MODE_APP)
 #if !defined(gUseHciTransportDownward_d) || (!gUseHciTransportDownward_d)
@@ -380,8 +384,6 @@ static osaTaskId_t mAppIdleTaskId = NULL;
 #endif
 #endif  /* cPWR_UsePowerDownMode */
 
-
-
 typedef struct {
     uint16_t pdmId;
     uint16_t nbRamWrite;
@@ -418,6 +420,39 @@ static gattClientNotificationCallback_t pfGattClientNotifCallback = NULL;
 static gattClientNotificationCallback_t pfGattClientIndCallback = NULL;
 static l2caLeCbDataCallback_t           pfL2caLeCbDataCallback = NULL;
 static l2caLeCbControlCallback_t        pfL2caLeCbControlCallback = NULL;
+
+#if !defined(gHybridApp_d) || (!gHybridApp_d)
+#ifndef DUAL_MODE_APP
+
+#if (defined gRadioUsePdm_d && gRadioUsePdm_d) || (defined gBleControllerUsePdm_d && gBleControllerUsePdm_d)
+
+#if defined(gAPP_PdmUseEncryption_d) && (gAPP_PdmUseEncryption_d>0)
+#if defined(gAPP_PdmStagingBufferSize_c) && (gAPP_PdmStagingBufferSize_c>0)
+static uint8_t staging_buf[gAPP_PdmStagingBufferSize_c];
+static uint32_t SwKey[4] = {
+  0,1,2,3
+};
+static PDM_portConfig_t pdm_PortContext = {
+    .pStaging_buf       = staging_buf,                   /*!< staging buffer to encrypt the data from application before writing to FLash */
+    .staging_buf_size   = gAPP_PdmStagingBufferSize_c,  /*!< staging buffer size */
+    .pEncryptionKey     = SwKey,                        /*!< Software key, Set to NULL to use efuse key  */
+    .config_flags       = 1,                            /*!< Encryption enabled */
+};
+#else
+/* No staging buffer , using efuse key for encryption ,
+    Application can use a SW key as above if needed */
+static PDM_portConfig_t pdm_PortContext = {
+    .pStaging_buf       = NULL,                         /*!< staging buffer to encrypt the data from application before writing to FLash */
+    .staging_buf_size   = 0,                            /*!< staging buffer size */
+    .pEncryptionKey     = NULL,                         /*!< Efuse Key, set to valid uint32_t [4] for software key, see above. */
+    .config_flags       = 1,                            /*!< Encryption enabled */
+};
+#endif   // defined(gAPP_PdmStagingBufferSize_c) && (gAPP_PdmStagingBufferSize_c>0)
+#endif   // defined(gAPP_PdmUseEncryption_d) && (gAPP_PdmUseEncryption_d>0)
+
+#endif   // (defined gRadioUsePdm_d && gRadioUsePdm_d) || (defined gBleControllerUsePdm_d && gBleControllerUsePdm_d)
+#endif   // DUAL_MODE_APP
+#endif   // !defined(gHybridApp_d) || (!gHybridApp_d)
 
 /************************************************************************************
 *************************************************************************************
@@ -488,7 +523,7 @@ void main_task(uint32_t param)
   #endif /* MULTICORE_CONNECTIVITY_CORE */
         /* Set external multiplication callback if we don't have support for hardware elliptic curve
          * multiplication */
-#if defined(FSL_FEATURE_SOC_CAU3_COUNT) && (FSL_FEATURE_SOC_CAU3_COUNT > 0)
+#if defined(FSL_FEATURE_SOC_CAU3_COUNT) && (FSL_FEATURE_SOC_CAU3_COUNT > 0) || (defined EC_P256_DSPEXT && (EC_P256_DSPEXT == 1))
 #else
         SecLib_SetExternalMultiplicationCb(App_SecLibMultCallback);
 #endif
@@ -512,7 +547,14 @@ void main_task(uint32_t param)
 
   #if (defined gRadioUsePdm_d && gRadioUsePdm_d) || (defined gBleControllerUsePdm_d && gBleControllerUsePdm_d)
         PDM_Init();
+
+  #if defined(gAPP_PdmUseEncryption_d) && (gAPP_PdmUseEncryption_d>0)
+        PDM_SetEncryption(&pdm_PortContext);
   #endif
+
+  #endif
+
+
 
 #if !defined (SOTA_ENABLED)
 #if !gUseHciTransportDownward_d
@@ -1579,7 +1621,7 @@ static void App_HandleHostMessageInput(appMsgFromHost_t* pMsg)
             }
             break;
         }
-#if !(defined(FSL_FEATURE_SOC_CAU3_COUNT) && (FSL_FEATURE_SOC_CAU3_COUNT > 0))
+#if !(defined EC_P256_DSPEXT && (EC_P256_DSPEXT == 1)) && !(defined(FSL_FEATURE_SOC_CAU3_COUNT) && (FSL_FEATURE_SOC_CAU3_COUNT > 0))
         case (uint32_t)gAppSecLibMultiplyMsg_c:
         {
             computeDhKeyParam_t *pData = pMsg->msgData.secLibMsgData.pData;
@@ -2211,6 +2253,7 @@ MULTICORE_STATIC void App_L2caLeControlCallback
 #endif /* (MULTICORE_APPLICATION_CORE == 1) && (gFsciBleBBox_d == 1) */
 }
 
+#if !(defined EC_P256_DSPEXT && (EC_P256_DSPEXT == 1))
 /*! *********************************************************************************
 * \brief SecLib Callback
 *
@@ -2243,6 +2286,8 @@ MULTICORE_STATIC void App_SecLibMultCallback
     /* Signal application */
     (void)OSA_EventSet(mAppEvent, gAppEvtMsgFromHostStack_c);
 }
+#endif
+
 #if !defined (SOTA_ENABLED) && !defined (DUAL_MODE_APP)
 #if !defined(gUseHciTransportDownward_d) || (!gUseHciTransportDownward_d)
 

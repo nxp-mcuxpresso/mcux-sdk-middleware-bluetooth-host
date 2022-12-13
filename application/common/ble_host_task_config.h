@@ -15,6 +15,8 @@
 #ifndef BLE_HOST_TASK_CONFIG_H
 #define BLE_HOST_TASK_CONFIG_H
 
+#include "fsl_device_registers.h"
+
 #include "fsl_os_abstraction.h"
 
 /************************************************************************************
@@ -27,10 +29,17 @@
  * These values should be modified by the application as necessary.
  * They are used by the task initialization code from ble_host_tasks.c.
  */
-
 #ifndef gHost_TaskStackSize_c
-#define gHost_TaskStackSize_c 1500
+    #define gHost_TaskStackMinSize_c 0x600
+    #define gHostTask_XtraStackSzForEcP256 0x280
+    /* The use of the DSP extension optimized EC P256 library requires more stack */
+    #if (defined(EC_P256_DSPEXT) && (EC_P256_DSPEXT == 1)) && (defined gAppUsePairing_d && (gAppUsePairing_d != 0))
+        #define gHost_TaskStackSize_c ((gHost_TaskStackMinSize_c) + (gHostTask_XtraStackSzForEcP256))
+    #else
+        #define gHost_TaskStackSize_c (gHost_TaskStackMinSize_c)
+    #endif
 #endif
+
 
 #ifndef gHost_TaskPriority_c
 #define gHost_TaskPriority_c 6
