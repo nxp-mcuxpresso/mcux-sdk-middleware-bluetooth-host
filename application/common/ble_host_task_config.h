@@ -30,6 +30,9 @@
  * They are used by the task initialization code from ble_host_tasks.c.
  */
 #ifndef gHost_TaskStackSize_c
+    #ifndef EC_P256_DSPEXT
+    #define EC_P256_DSPEXT 1
+    #endif
     #define gHost_TaskStackMinSize_c 0x600
     #define gHostTask_XtraStackSzForEcP256 0x280
     /* The use of the DSP extension optimized EC P256 library requires more stack */
