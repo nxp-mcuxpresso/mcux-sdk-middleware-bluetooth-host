@@ -1,21 +1,19 @@
-Release Name: MCUXpresso Software Development Kit (SDK) BLE Host middleware
-Release Version: 2.6.10
-Package License: LA_OPT_NXP_Software_License.htm - Additional Distribution License, Section 2.3 applies
+NXP Software Content Register
+Outgoing License: LA_OPT_NXP_SOFTWARE_License v44 - Additional distribution license granted, license in Section 2.3 applies
+License in File: LICENSE.htm
 
-BLE                        version: 1.7.4                        
-                           Location: /           
-                           Description: Bluetooth Low Energy Software        
-                           License: Open Source - BSD-3-Clause               
-                           Author: NXP                                       
-                           name: Bluetooth Low Energy Application Source     
-                           Format: Source code and header Files              
+Package: mcux-sdk-middleware-bluetooth-host.git
+Version: 1.7.4  
+Outgoing License: BSD-3-Clause 
+License File: LICENSE.htm
+Description and comments: Bluetooth Low Energy Application Firmware 
+Release Location: https://github.com/nxp-mcuxpresso/mcux-sdk-middleware-bluetooth-host.git
+Origin: NXP (BSD-3-clause)
 
-BLE_HostLib                version: 1.7.4     
-                           Location: host/lib  
-                           Description: Bluetooth Low Energy Stack (HCI,     
-                           L2CAP, ATT, GATT, GAP and SM)                     
-                           License: Proprietary, See EULA                    
-                           LA_OPT_NXP_Software_License.htm                   
-                           Author: NXP                                       
-                           name: Bluetooth Low Energy Host Firmware          
-                           Format: Binary libraries
+Package: host/lib
+Version: 1.7.4  
+Outgoing License: LA_OPT_NXP_SOFTWARE_License v44 - Additional distribution license granted, license in Section 2.3 applies
+License File: LICENSE.htm
+Description and comments: Bluetooth Low Energy Host Firmware 
+Release Location: https://github.com/nxp-mcuxpresso/mcux-sdk-middleware-bluetooth-host.git
+Origin: NXP (proprietary)
